@@ -1,41 +1,10 @@
 ## CS 470 Poject 4
 import pygame
 import random
+import pickle
 from car import Car
 from globals import *
-
-
-def generate_world():
-    world = [[0 for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
-
-    for y in range(GRID_SIZE):
-        for x in range(GRID_SIZE):
-            if x % ROAD_FREQUENCY == 0 or y % ROAD_FREQUENCY == 0:
-                # if random.random() < ROAD_PROBABILITY:
-                world[y][x] = 1
-                if y + 1 < GRID_SIZE:
-                    world[y + 1][x] = 1
-                if x + 1 < GRID_SIZE:
-                    world[y][x + 1] = 1
-
-    
-    placed_building = False
-    building_location = (0,0)
-    while not placed_building:
-        y = random.randint(1, GRID_SIZE - 2)
-        x = random.randint(1, GRID_SIZE - 2)
-
-        if world[y][x] == 0 and any([world[y+dy][x+dx] == 1 for dy, dx in [(-1, 0), (1, 0), (0, -1), (0, 1)]]):
-            world[y][x] = 2
-            building_location = (y, x)
-            for dy, dx in [(-1, 0), (1, 0), (0, -1), (0, 1), (-1,-1), (1,1), (-1,1),(1,-1)]:
-                if world[y+dy][x+dx] == 0:
-                    world[y+dy][x+dx] = 3
-                    
-            placed_building = True
-
-
-    return world, building_location
+from world import World
 
 def draw_block(pos, color, screen):
     pygame.draw.rect(screen, color, (pos[0] * BLOCK_SIZE, pos[1] * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE))
@@ -75,7 +44,7 @@ def place_car(world):
         y = random.randint(0, GRID_SIZE - 1)
         x = random.randint(0, GRID_SIZE - 1)
 
-        if world[y][x] == 1:
+        if world.world[y][x] == ROAD:
             return (x, y)
         
 def draw_lines(screen, pos):
@@ -99,7 +68,7 @@ def utility(car: Car, goal) -> int:
     return distance
 
 
-def main():
+def main(world:World=None):
     # Initialize pygame
     pygame.init()
 
@@ -110,16 +79,18 @@ def main():
     # Initialize clock
     clock = pygame.time.Clock()
 
-    # Generate a random 2D block world
-    world, building_location = generate_world()
     # place_car(world)
     positions = []
     cars = []
     for i in range(NUM_CARS):
-        p = place_car(world)
-        # p = building_location[0]+1, building_location[1]+1
-        if p not in positions:
-            cars.append(Car(p, world))
+        while True:
+            p = place_car(world)
+            # p = building_location[0]+1, building_location[1]+1
+            if p not in positions:
+                building_num = i % NUM_BUILDINGS
+                cars.append(Car(p, building_num, world.get_world_and_building(building_num), world.get_possible_moves(building_num)))
+                break
+
         positions.append(p)
 
     # Main game loop
@@ -138,23 +109,23 @@ def main():
         else:
             transition = frame%FPD / FPD
         # transition = 1
-        draw_world(world, screen, *cars, transition=transition)
+        draw_world(world.get_world_and_building(), screen, *cars, transition=transition)
         pygame.display.flip()
 
         if frame % FPD == 0:
             new_poss = []
             for car in cars:
                 pos = car.move(world)
-                if pos == building_location:
+                if pos == world.building_locations[car.building_num]:
                     car.state = "finished"
-                elif world[pos[0]][pos[1]] == 4:
-                    car.state = "crashed"
-                    world[car.prev_pos[0]][car.prev_pos[1]] = 4
-                elif pos in new_poss:
-                    # Make sure both cars change to crashed
-                    cars[new_poss.index(pos)].state = "crashed"
-                    car.state = "crashed"
-                    world[car.prev_pos[0]][car.prev_pos[1]] = 4
+                # elif world[pos[0]][pos[1]] == 4:
+                #     car.state = "crashed"
+                #     world[car.prev_pos[0]][car.prev_pos[1]] = 4
+                # elif pos in new_poss:
+                #     # Make sure both cars change to crashed
+                #     cars[new_poss.index(pos)].state = "crashed"
+                #     car.state = "crashed"
+                #     world[car.prev_pos[0]][car.prev_pos[1]] = 4
                 new_poss.append(pos)
 
                 # score = utility(car, building_location)
@@ -169,4 +140,8 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # To Open Saved World
+    # world = World.open()
+    # To Generate New World and overwrite save:
+    world = World()
+    main(world=world)

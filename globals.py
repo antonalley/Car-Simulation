@@ -1,12 +1,27 @@
 # Define constants
+
+
+############## FEEL FREE TO CHANGE THESE (MUST DELETE world.pickle IF CHANGED) ###################
+NUM_CARS = 25
+NUM_BUILDINGS = 12
+
+
 WIDTH = 800
 HEIGHT = 800
 BLOCK_SIZE = 16
 GRID_SIZE = 50
-FPS = 30
-FPD = 3 # Frames per decision
 ROAD_FREQUENCY = 8
 # ROAD_PROBABILITY = 1.0
+
+FPS = 30
+FPD = 3 # Frames per decision
+
+
+############################################################
+
+
+############ DONT CHANGE THESE #############################
+
 
 # Define colors
 GRASS_COLOR = (0, 128, 0)
@@ -45,9 +60,6 @@ LEFT = (0,-1)
 RIGHT = (0,1)
 STAY = (0,0)
 
-NUM_CARS = 4
-
-
 ### For Value Iteration: 
 
 REWARD_VALUES = {
@@ -60,3 +72,9 @@ REWARD_VALUES = {
 }
 
 ACTIONS = [UP, DOWN, LEFT, RIGHT]
+
+##########################################################
+
+
+
+
