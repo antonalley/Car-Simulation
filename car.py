@@ -1,3 +1,4 @@
+from copy import deepcopy
 import random
 from globals import *
 import numpy as np
@@ -33,17 +34,22 @@ def next_spot(world, current, dir):
     
  
 
-def value_iteration(world, possible_moves, discount_factor=0.99, epsilon=0.01):
-    values = np.zeros((GRID_SIZE, GRID_SIZE))
-    new_values = np.zeros((GRID_SIZE, GRID_SIZE))
+def value_iteration(world, possible_moves, prev_values=None, discount_factor=0.99, epsilon=1):
+    values = np.zeros((GRID_SIZE, GRID_SIZE)) if prev_values is None else prev_values
+    new_values = np.zeros((GRID_SIZE, GRID_SIZE)) if prev_values is None else prev_values
 
     terminal_states = [BUILDING, GRASS, CRASH, CAR]
 
-    for y in range(GRID_SIZE):
-            for x in range(GRID_SIZE):
-                if world[y][x] in terminal_states:
-                    values[y][x] = get_reward(y, x, world)
-                    new_values[y][x] = get_reward(y, x, world)
+    # TODO
+    # Set the current position of the car to 0 so it will want to move
+    # values[car_pos[0]][car_pos[1]] = 0
+    # new_values[car_pos[0]][car_pos[1]] = 0
+    if prev_values is None:
+        for y in range(GRID_SIZE):
+                for x in range(GRID_SIZE):
+                    if world[y][x] in terminal_states:
+                        values[y][x] = get_reward(y, x, world)
+                        new_values[y][x] = get_reward(y, x, world)
 
     while True:
         for y in range(GRID_SIZE):
@@ -58,7 +64,7 @@ def value_iteration(world, possible_moves, discount_factor=0.99, epsilon=0.01):
                     new_values[y][x] = max_value
 
         diff = np.abs(values - new_values).max()
-        if diff < epsilon:
+        if diff <= epsilon:
             break
         values = np.copy(new_values)
 
@@ -66,13 +72,13 @@ def value_iteration(world, possible_moves, discount_factor=0.99, epsilon=0.01):
 
 
 class Car:
-    def __init__(self, pos, building_num, world, possible_moves):
+    def __init__(self, pos, building_num, possible_moves, initial_value_iteration):
         self.pos = pos
         self.prev_pos = pos
         self.state = "moving" # Can be moving, crashed, or finished
         # self.accel = 1
         # self.speed = 0
-        self.og_values = value_iteration(world, possible_moves=possible_moves)
+        self.og_values = initial_value_iteration
         self.possible_moves = possible_moves
         self.building_num = building_num
 
@@ -85,15 +91,16 @@ class Car:
         return self.pos[0]
     
 
-    def move(self, world):
+    def move(self, world, possible_moves):
         if self.state != "moving":
             self.prev_pos = self.pos
             return self.pos
         
         # legal_moves = get_possible_moves(self.pos, world)
         
-        # values = value_iteration(world)
+        # values = value_iteration(world, possible_moves, prev_values=self.og_values)
         values = self.og_values
+
         best_move = STAY
         best_score = -np.inf
         for dir in self.possible_moves[self.pos]: # [UP, DOWN, RIGHT, LEFT, STAY]:

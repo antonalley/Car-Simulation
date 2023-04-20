@@ -2,7 +2,7 @@ import pickle
 import random
 from copy import deepcopy
 
-from car import next_pos, next_spot
+from car import next_pos, next_spot, value_iteration
 from globals import *
 
 
@@ -103,15 +103,15 @@ class World:
             y = random.randint(1, GRID_SIZE - 2)
             x = random.randint(1, GRID_SIZE - 2)
 
-            if world[y][x] == 0 and any([world[y+dy][x+dx] == 1 for dy, dx in [(-1, 0), (1, 0), (0, -1), (0, 1)]]):
+            if world[y][x] == 0 and any([world[y+dy][x+dx] == 1 for dy, dx in [UP, DOWN, LEFT, RIGHT]]):
                 building_locations.append((y, x))
                 placed_buildings += 1
 
         return world, building_locations
     
 
-    def get_world_and_building(self, building_num='all'):
-        if f"get_world_and_building({building_num})" not in self.cache:
+    def get_world_and_building(self, building_num='all', force_update=False):
+        if force_update or f"get_world_and_building({building_num})" not in self.cache:
             locs =  self.building_locations if building_num == 'all' else [self.building_locations[building_num]]             
             mod_world = deepcopy(self.world)
             for loc in locs:
@@ -126,18 +126,21 @@ class World:
         else:
             return self.cache[f"get_world_and_building({building_num})"]
     
-    def get_world_and_crashes(self):
-        # TODO
-        return self.world
+    def get_world_and_cars(self, cars, building_num='all'):
+        mod_world = deepcopy(self.get_world_and_building(building_num=building_num))
+        for car in cars:
+            if car.state == 'moving':
+                mod_world[car.pos[0]][car.pos[1]] = CAR
+            elif car.state == 'crashed':
+                mod_world[car.pos[0]][car.pos[1]] = CRASH
+            elif car.state == 'finished':
+                pass
+        return mod_world
     
-    def get_world_and_cars(self):
-        # TODO
-        return self.world
-    
-    def get_possible_moves(self, building_num):
-        if f"get_possible_moves({building_num})" not in self.cache:
+    def get_possible_moves(self, building_num, force_update=False):
+        if force_update or f"get_possible_moves({building_num})" not in self.cache:
             moves_dict = {}
-            mod_world = self.get_world_and_building(building_num)
+            mod_world = deepcopy(self.get_world_and_building(building_num))
             for i in range(len(mod_world)):
                 for j in range(len(mod_world[i])):
                     pos = (i,j)
@@ -150,6 +153,15 @@ class World:
             return self.cache[f"get_possible_moves({building_num})"]
         
 
+    def get_initial_value_iteration(self, building_num, force_update=False):
+        if force_update or f"get_initial_value_iteration({building_num})" not in self.cache:
+            v = value_iteration(self.get_world_and_building(building_num), self.get_possible_moves(building_num))
+            self.cache[f"get_initial_value_iteration({building_num})"] = v
+            self.save()
+            return v
+        else:
+            return self.cache[f"get_initial_value_iteration({building_num})"]
+        
     def save(self):
         with open(self.save_file, 'wb') as f:
             pickle.dump(self, f)
