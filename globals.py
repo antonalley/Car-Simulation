@@ -1,36 +1,43 @@
 # Define constants
 
 
-############## FEEL FREE TO CHANGE THESE (MUST DELETE world.pickle IF CHANGED) ###################
+############## FEEL FREE TO CHANGE THESE (DELETE world.pickle IF CHANGED) ##########
 NUM_CARS = 50
 NUM_BUILDINGS = 5
 
-BLOCK_SIZE = 12
+BLOCK_SIZE = 16
 ROAD_FREQUENCY = 10  # MINIMUM OF 4
-NUM_GRID_BLOCK = 5
-
-# ROAD_PROBABILITY = 1.0
+NUM_GRID_BLOCK = 4
 
 FPS = 30
-FPD = 3 # Frames per decision
+FPD = 3  # Frames per decision
 
 
 ############################################################
 
 
 ############ DONT CHANGE THESE #############################
-GRID_SIZE = 2 + ROAD_FREQUENCY*NUM_GRID_BLOCK
-WIDTH = BLOCK_SIZE*GRID_SIZE
-HEIGHT = BLOCK_SIZE*GRID_SIZE + 50
+GRID_SIZE = 2 + ROAD_FREQUENCY * NUM_GRID_BLOCK
+WIDTH = BLOCK_SIZE * GRID_SIZE
+HEIGHT = BLOCK_SIZE * GRID_SIZE + 60
 
 # Define colors
-GRASS_COLOR = (0, 128, 0)
-ROAD_COLOR = (128, 128, 128)
-BUILDING_COLOR = (212,175,55)
-PARKING_LOT_COLOR = (0,0,0)
-CAR_COLOR = (200,20,20)
-LINE_COLOR = (255,255,255)
-CRASH_COLOR = (70,10,10)
+GRASS_COLOR = (34, 139, 34)
+ROAD_COLOR = (110, 110, 110)
+BUILDING_COLOR = (212, 175, 55)
+PARKING_LOT_COLOR = (140, 120, 90)
+CAR_COLOR = (200, 20, 20)
+LINE_COLOR = (255, 255, 255)
+CRASH_COLOR = (70, 10, 10)
+
+# Per-building destination colors (used for cars and buildings)
+BUILDING_COLORS = [
+    (212, 175, 55),   # Gold
+    (70, 130, 180),   # Steel blue
+    (200, 80, 60),    # Red-orange
+    (100, 180, 100),  # Light green
+    (180, 100, 200),  # Purple
+]
 
 # Color map
 cmap = {
@@ -50,31 +57,23 @@ PARKING_LOT = 3
 CRASH = 4
 CAR = 5
 
-# UP = (0, -1)
-# DOWN = (0,1)
-# RIGHT = (1, 0)
-# LEFT = (-1, 0)
-UP = (-1,0)
-DOWN = (1,0)
-LEFT = (0,-1)
-RIGHT = (0,1)
-STAY = (0,0)
+UP = (-1, 0)
+DOWN = (1, 0)
+LEFT = (0, -1)
+RIGHT = (0, 1)
+STAY = (0, 0)
 
-### For Value Iteration: 
+### For Value Iteration:
 
 REWARD_VALUES = {
     BUILDING: GRID_SIZE ** 2,
     ROAD: -1,
     PARKING_LOT: 0,
     GRASS: -GRID_SIZE,
-    CRASH: -ROAD_FREQUENCY*4,
+    CRASH: -ROAD_FREQUENCY * 4,
     CAR: -ROAD_FREQUENCY
 }
 
 ACTIONS = [UP, DOWN, LEFT, RIGHT]
 
 ##########################################################
-
-
-
-
